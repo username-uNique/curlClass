@@ -5,7 +5,7 @@ $curl = new cURL();
 
 $cookie = uniqid("cookie_"); // Generate unique id for cookie file.
 
-$luminati = [
+$proxy = [
     'METHOD' => 'LUMINATI',
     'USERNAME' => 'your_username',
     'PASSWORD' => 'your_password',
