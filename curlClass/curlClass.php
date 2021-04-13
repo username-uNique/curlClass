@@ -1,8 +1,7 @@
 <?php
  #Author @username_uNique
-error_reporting(0);
-
-class cURL{
+class cURL
+{
     private static $ch;
     private static $response;
     private static $autoHeaders;
@@ -10,7 +9,7 @@ class cURL{
     private static array $response_infos;
     private static string $error_in_string;
     private static string $cookie_system = '';
-    private static array $def_CurlOption = [
+    private static array $set_curl_option = [
         CURLOPT_TIMEOUT        => 30,
         CURLOPT_CONNECTTIMEOUT => 30,
         CURLOPT_HEADER         => true,
@@ -33,7 +32,7 @@ class cURL{
     private static function setUrl(string $url): void
     {
         self::$ch = curl_init($url);
-        self::curlOption(self::$def_CurlOption);
+        self::curlOption(self::$set_curl_option);
     }
 
     /**
@@ -219,7 +218,7 @@ class cURL{
      */
     private static function smartCookie(string $file): void
     {
-        self::$cookie_system = sprintf("%s/%s.txt", getcwd(), $file);
+        self::$cookie_system = sprintf("%s/%s.txt", sys_get_temp_dir(), $file);
         self::curlOption([
             CURLOPT_COOKIEJAR => self::$cookie_system,
             CURLOPT_COOKIEFILE => self::$cookie_system,
@@ -236,9 +235,6 @@ class cURL{
     public static function deleteCookie(): void
     {
         unlink(self::$cookie_system);
-        unlink(self::$cookie_system);
-        unlink('cookies.txt');
-        unlink('cookie.txt');
     }
 
     /**
@@ -364,10 +360,10 @@ class cURL{
      */
     public static function delete(
         string $url,
-        $data = NULL,
-        array $headers = NULL,
-        string $cookie = NULL,
-        array $server = NULL
+        $data = null,
+        array $headers = null,
+        string $cookie = null,
+        array $server = null
     ): object {
         self::setUrl($url);
         self::curlOption([
@@ -378,7 +374,6 @@ class cURL{
         self::validateParam($headers, $cookie, $server);
         return self::run();
     }
-
 
     /**
      * set curl request and headerfunction
@@ -391,9 +386,7 @@ class cURL{
     {
         self::createStdClass();
         self::curlOption([
-            CURLOPT_HEADERFUNCTION => setAutoHeaders(
-                self::$autoHeaders
-            ),
+            CURLOPT_HEADERFUNCTION => setAutoHeaders(self::$autoHeaders),
         ]);
         self::$response = curl_exec(self::$ch);
         self::$response_infos = curl_getinfo(self::$ch);
@@ -491,17 +484,17 @@ class cURL{
     }
 
     /**
-    * get random string from selected file
-    *
-    * @access public
-    * @param string $file
-    *
-    * @return string
-    */
-    public static function random(string $file) : string 
+     * get random string from selected file
+     *
+     * @access public
+     * @param string $file
+     *
+     * @return string
+     */
+    public static function random(string $file): string
     {
         $_ = file($file);
-        return $_[rand(0, (count($_) - 1))];
+        return $_[rand(0, count($_) - 1)];
     }
 
     /**
@@ -599,6 +592,28 @@ class cURL{
     }
 
     /**
+     * Can split a string by two specify strings
+     *
+     * @access public
+     * @param string $str
+     * @param string $start
+     * @param string $end
+     * @param bool $decode
+     *
+     * @return string
+     */
+    public static function getBetwn(
+        string $str,
+        string $start,
+        string $end,
+        bool $decode = false
+    ): string {
+        return $decode
+            ? base64_decode(explode($end, explode($start, $str)[1])[0])
+            : explode($end, explode($start, $str)[1])[0];
+    }
+
+    /**
      * get valid chrome version
      *
      * @access private
@@ -608,7 +623,11 @@ class cURL{
      */
     private static function chromeVal($version): string
     {
-        return random_int($version['min'], $version['max']) . '.0.' . random_int(1000, 4000) . '.' . random_int(100, 400);
+        return random_int($version['min'], $version['max']) .
+            '.0.' .
+            random_int(1000, 4000) .
+            '.' .
+            random_int(100, 400);
     }
 
     /**
@@ -620,8 +639,119 @@ class cURL{
      */
     private static function userAgent(): string
     {
-        $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/' . (random_int(1, 100) > 50 ? random_int(533, 537) : random_int(600, 603)) . '.' . random_int(1, 50) . ' (KHTML, like Gecko) Chrome/' . self::chromeVal([ 'min' => 47, 'max' => 55 ]) . ' Safari/' . (random_int(1, 100) > 50 ? random_int(533, 537) : random_int(600, 603));
+        $userAgent =
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/' .
+            (random_int(1, 100) > 50
+                ? random_int(533, 537)
+                : random_int(600, 603)) .
+            '.' .
+            random_int(1, 50) .
+            ' (KHTML, like Gecko) Chrome/' .
+            self::chromeVal(['min' => 47, 'max' => 55]) .
+            ' Safari/' .
+            (random_int(1, 100) > 50
+                ? random_int(533, 537)
+                : random_int(600, 603));
         return $userAgent;
+    }
+
+    /**
+     * Bin 3DS Lookup
+     *
+     * @access public
+     *
+     * @return string
+     */
+    public static function vbv($cc)
+    {
+        $curl = new cURl();
+        $src = $curl->getBetwn(
+            $curl->post(
+                "https://api.stripe.com/v1/sources",
+                'type=card&amount=100&currency=usd&owner[name]=Sam+Mobile&owner[address][line1]=75 new street&owner[address][state]=New York&owner[address][city]=New York&owner[address][postal_code]=100' .
+                    rand(10, 99) .
+                    '&owner[address][country]=US&owner[email]=sam.mobile' .
+                    rand(1000, 9999) .
+                    '@gmail.com&owner[phone]=315553' .
+                    rand(1000, 9999) .
+                    '&card[number]=' .
+                    $cc .
+                    '&card[cvc]=000&card[exp_month]=' .
+                    rand(10, 12) .
+                    '&card[exp_year]=' .
+                    rand(2022, 2026) .
+                    '',
+                [
+                    'accept: application/json',
+                    'content-type: application/x-www-form-urlencoded',
+                    'Authorization: Bearer pk_live_8ZXaSbK1KVxQMtQpTRnnfMk700mZlVgQdG',
+                ]
+            )->body,
+            '"id": "','"'
+        );
+        $url = str_replace(
+            '\u0026',
+            '&',
+            $curl->getBetwn(
+                $curl->post(
+                    "https://api.stripe.com/v1/sources",
+                    "type=three_d_secure&amount=100&currency=usd&three_d_secure[card]=$src&redirect[return_url]=https%3A%2F%2Fstripe.com%2Fstatic_page&key=pk_live_8ZXaSbK1KVxQMtQpTRnnfMk700mZlVgQdG",
+                    [
+                        'accept: application/json',
+                        'content-type: application/x-www-form-urlencoded',
+                    ]
+                )->body,
+                '"url": "','"'
+            )
+        );
+        $resp = $curl->get($url, null)->body;
+        if (strpos($resp, 'Return to Merchant')) {
+            return 'Pure NON VBV';
+        } else {
+            return '3DS Enrolled';
+        }
+    }
+
+    /**
+     * return array strpos
+     *
+     * @access public
+     *
+     * @return string
+     */
+    public static function strpos_array(
+        $haystack,
+        $needles = [],
+        $offset = 0
+    ): string {
+        $chr = [];
+        foreach ($needles as $needle) {
+            $res = strpos($haystack, $needle, $offset);
+            if ($res !== false) {
+                $chr[$needle] = $res;
+            }
+        }
+        if (empty($chr)) {
+            return false;
+        }
+        return min($chr);
+    }
+
+    /**
+     * return valid response
+     *
+     * @access public
+     *
+     * @return string
+     */
+    public static function find($resp, $data, $lista, $msg, $binx): string
+    {
+        $curl = new cURL();
+        if ($curl->strpos_array($resp, $data)) {
+            echo "<span class='content12'>Approved<font size='3.5'> $lista </font> CVV Matches || $binx</span>";
+        } else {
+            echo "<span class='content12'>Declined<font size='3.5'> $lista </font> MSG => $msg</span>";
+        }
     }
 }
 
